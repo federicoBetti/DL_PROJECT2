@@ -1,3 +1,5 @@
+from torch import FloatTensor
+
 from Utils import exceptions_check
 from modules import Module
 
@@ -51,4 +53,4 @@ class Linear(Module):
 
     def backward(self, input):
         exceptions_check.checkFloatTensor(input)
-        return inp
+        return FloatTensor(input.shape).fill_(1)
