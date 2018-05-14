@@ -14,7 +14,10 @@ class ReLU(Module):
 
     def backward(self, input):
         exceptions_check.checkFloatTensor(input)
-        return input.clamp(min=0).gt(0)
+        return input.clamp(min=0).gt(0).type(FloatTensor)
+
+    def is_layer(self):
+        return False
 
 
 class Tanh(Module):
@@ -29,6 +32,9 @@ class Tanh(Module):
         exceptions_check.checkFloatTensor(input)
         return 4 * (input.exp() + input.mul(-1).exp()).pow(-2)
 
+    def is_layer(self):
+        return False
+
 
 class Sigmoid(Module):
     def __init__(self):
@@ -42,6 +48,9 @@ class Sigmoid(Module):
         exceptions_check.checkFloatTensor(input)
         return input.sigmoid().mul(1-input.sigmoid())
 
+    def is_layer(self):
+        return False
+
 
 class Linear(Module):
     def __init__(self):
@@ -54,3 +63,6 @@ class Linear(Module):
     def backward(self, input):
         exceptions_check.checkFloatTensor(input)
         return FloatTensor(input.shape).fill_(1)
+
+    def is_layer(self):
+        return False
