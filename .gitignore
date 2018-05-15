@@ -2,3 +2,6 @@
 /.idea/*
 */__pycache__
 /__pycache__
+
+/data/*
+dlc_practical_prologue.py
