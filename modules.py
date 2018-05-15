@@ -91,32 +91,8 @@ class Dense(Module):
         exceptions_check.checkFloatTensor(x)
         return x.mm(self.weigths).add(self.bias)
 
-    def backward(self, input): # never used, because it should be linear since we don't have activations here
-        self.error = self.weigths.t().mul(x)
-        return self.error
+    def backward(self, input):
+        return input
 
     def is_layer(self):
         return True
-
-    # def __repr__(self):
-    #     return 'Linear layer\n ' + 'Input: ' + str(self.in_neurons) + ', ' + 'Output: ' + str(self.out_neurons)
-
-
-'''
-Notes for future:
-ogni layer deve tenere traccia della sua funzione di attivazione:
-ogni layer Netowrk(ex linear) ha una funzione ugualianza y=x come attivazione
-ogni layer activations ha come weigths un vettore di tutti uno
-'''
-
-# Utils functions
-
-def MiniBatch3DMul(x_lb, dlds):
-    assert x_lb.shape[0] == dlds.shape[0]
-    x_lb = x_lb.unsqueeze(-1)
-    dlds = dlds.unsqueeze(-1)
-    result = FloatTensor(x_lb.shape[0], x_lb.shape[1], dlds.shape[1]).fill_(0)
-    for i in range(x_lb.shape[0]):
-        result[i] = x_lb[i].mm(dlds[i].t())
-    return result
-

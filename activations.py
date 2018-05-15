@@ -76,12 +76,12 @@ class SoftMax(Module):
     def forward(self, input):
         exceptions_check.checkFloatTensor(input)
         exps = input.exp()
-        return exps / input.sum()
+        return exps / exps.sum(1).unsqueeze(-1).expand(exps.shape)
 
     def backward(self, input):
         exceptions_check.checkFloatTensor(input)
-        raise NotImplementedError
-        return FloatTensor(input.shape).fill_(1)
+        # print(input, input * (1 - input))
+        return input * (1 - input)
 
     def is_layer(self):
         return False
