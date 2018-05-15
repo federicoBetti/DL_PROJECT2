@@ -28,8 +28,8 @@ class Sequential(Module):
         self.activation = []  # to store activation function results in the forward pass
 
     def forward(self, x):
-        self.results = [x]
-        self.activations = []
+        self.results = []
+        self.activations = [x]
         output = x
         for layer in self.layers:
             output = layer.forward(output)
@@ -39,57 +39,35 @@ class Sequential(Module):
         return output
 
     def backward(self, loss, target, mini_batch):
-        # if self.db == [] and self.dw == []:
-        # self.db = [FloatTensor(Size( [mini_batch] + [x for x in layer.bias.shape] )).zero_() for layer in self.layers]
-        # self.dw = [FloatTensor(Size( [mini_batch] + [x for x in layer.weigths.shape] )).zero_() for layer in self.layers]
+
         db = self.db
         dw = self.dw
 
         x_lt = self.activations[-1]  # output of activation of the last layer
-        s_lt = self.results[-1]  # output of the last layer
         x_lb = self.activations[-2]  # output of the second last layer, without activation
+        s_lt = self.results[-1]  # output of the last layer
         dsigma = self.layers[-1].activation.backward(s_lt)  # derivative of the last activation function
 
         dldx = loss.prime(x_lt, target)  # compute the derivtive of the Loss in the output layer
         dlds = dsigma * dldx  # error in the output layer, that must be computed alone
 
-        temp_db = dlds.sum(0)
-        db[-1] += temp_db  # accumulate all the biases of the minibatch. Size = #output_neurons
+        db[-1].add_(dlds.sum(0))  # accumulate all the biases of the minibatch. Size = #output_neurons
+        dw[-1].add_(x_lb.t().mm(dlds))
 
-        # print('before temp', x_lb.shape, dlds.shape)
-        # i want temp as a tensor #minibatch_size x #neurons_last_layer x #neurons_output_layer
-        temp = MiniBatch3DMul(x_lb, dlds)
-        # print(temp.sum(0).shape)
-        # print(dw[-1].shape)
-        dw[-1] += temp.sum(0)  # temp.sum(0) does a sum on the minibatch dimension and sum it to the accumulate gradient
-        # at the end i think that for each minibatch temp.sum(0) is dw, because dw was 0 and it will never be updated
-        # += operations may be useless, = can be ok too probably
-
-        for i in range(2, self.num_layers + 1):
+        for i in range(2, self.num_layers+1):
             x_lt = self.activations[-i]
+            x_lb = self.activations[-(i + 1)]            
             s_lt = self.results[-i]
-
-            # we are in the first layer, than we have to use input as activation of previous layer. Input are stored
-            # in self.results[0]. This is ok now, some problems may arise when we have a net with only one layer
-            # since in the first part of this function we have used self.activations[-1]. In that case there wouldn't
-            #  be any self.activaitions layer
-            if i + 1 < self.num_layers:
-                x_lb = self.activations[-(i + 1)]
-            else:
-                x_lb = self.results[0]
 
             dsigma = self.layers[-i].activation.backward(s_lt)
             w = self.layers[-i + 1].weigths
 
             dldx = (dlds).mm(w.t())
             dlds = dldx * dsigma  # compute the error wrt the error in the next layer
-            # print('dlds:', dlds.shape)
-            db[-i] = dlds.sum(0)
 
-            # print('before temp', x_lb.shape, dlds.shape)
-            temp = MiniBatch3DMul(x_lb, dlds)  # compute the loss wrt all weighs in the network
-            # print(temp.sum(0).shape)
-            dw[-i] = temp.sum(0)
+            db[-i].add_(dlds.sum(0))
+            dw[-i].add_(x_lb.t().mm(dlds)) # compute the loss wrt all weighs in the network
+
         return dw, db
 
     def __eq__(self, other):
@@ -111,8 +89,6 @@ class Dense(Module):
     # x is input
     def forward(self, x):
         exceptions_check.checkFloatTensor(x)
-        # print("x shape:", x.shape)
-        # print("w shape:", self.weigths.shape)
         return x.mm(self.weigths).add(self.bias)
 
     def backward(self, input): # never used, because it should be linear since we don't have activations here

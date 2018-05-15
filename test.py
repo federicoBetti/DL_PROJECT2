@@ -38,7 +38,6 @@ def train_model(model, optim, train_input, train_target, val_input, val_target, 
             # print(output)  # shape mini_batch_siize x #output_neurons
 
             loss = criterion.apply(output, train_target.narrow(0, b, mini_batch_size))
-            # print("loss: ", loss)
 
             model.backward(criterion, train_target.narrow(0, b, mini_batch_size), mini_batch_size)
             optim.step(model)
@@ -53,14 +52,16 @@ def train_model(model, optim, train_input, train_target, val_input, val_target, 
         print("epoch: ", e, " loss: ", sum_loss, 'accuracy:', 1 - (nb_errors / val_target.shape[0]))
 
 
-lr = 1e-3
+lr = 1e-4
 optim = optimizer.SGD(lr)
 mini_batch_size = 100
-epoch = 1000
+epoch = 2000
 criterion = loss.MSELoss()
 
 test_model = nn.Sequential(
-    nn.Dense(2, 20, F.Sigmoid()),
+    nn.Dense(2, 80, F.ReLU()),
+    nn.Dense(80, 40, F.ReLU()),
+    nn.Dense(40, 20, F.ReLU()),
     nn.Dense(20, 1, F.Sigmoid())
 )
 
