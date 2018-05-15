@@ -66,3 +66,22 @@ class Linear(Module):
 
     def is_layer(self):
         return False
+
+
+
+class SoftMax(Module):
+    def __init__(self):
+        super(SoftMax, self).__init__()
+
+    def forward(self, input):
+        exceptions_check.checkFloatTensor(input)
+        exps = input.exp()
+        return exps / input.sum()
+
+    def backward(self, input):
+        exceptions_check.checkFloatTensor(input)
+        raise NotImplementedError
+        return FloatTensor(input.shape).fill_(1)
+
+    def is_layer(self):
+        return False
