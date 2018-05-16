@@ -1,4 +1,8 @@
+from math import nan
+
+import sys
 from torch import FloatTensor
+import numpy as np
 
 from Utils import exceptions_check
 from modules import Module
@@ -68,10 +72,10 @@ class Linear(Module):
         return False
 
 
-
 class SoftMax(Module):
     def __init__(self):
         super(SoftMax, self).__init__()
+        self.i = 0
 
     def forward(self, input):
         exceptions_check.checkFloatTensor(input)
@@ -80,8 +84,8 @@ class SoftMax(Module):
 
     def backward(self, input):
         exceptions_check.checkFloatTensor(input)
-        # print(input, input * (1 - input))
-        return input * (1 - input)
+        soft = self.forward(input)
+        return soft * (1 - soft)
 
     def is_layer(self):
         return False
