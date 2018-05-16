@@ -13,9 +13,9 @@ from Utils.support_functions import compute_nb_errors, standardization, plot_poi
 
 # Generate all needed datasets
 center = (0.5, 0.5)
-train_input, train_target = generate_disc_set(1500, center)  # Used to train the model
-val_input, val_target = generate_disc_set(2000, center)  # Used to check performances during training
-test_input, test_target = generate_disc_set(4000, center)  # Used to check final accuracy
+train_input, train_target = generate_disc_set(1000, center)  # Used to train the model
+val_input, val_target = generate_disc_set(1000, center)  # Used to check performances during training
+test_input, test_target = generate_disc_set(1000, center)  # Used to check final accuracy
 
 # Data standardization
 mean = train_input.mean(0)
@@ -75,8 +75,8 @@ def train_model(model, optim, train_input, train_target, val_input, val_target, 
                 print("{0:d}".format(e),
                       "train_loss: {0:.4f}".format(history['train_loss'][-1]),
                       "val_loss: {0:.4f}".format(history['val_loss'][-1]),
-                      "train_acc: {0:.2f}".format(history['train_acc'][-1]),
-                      "val_acc: {0:.2f}".format(history['val_acc'][-1]))
+                      "train_acc: {0:.3f}".format(history['train_acc'][-1]),
+                      "val_acc: {0:.3f}".format(history['val_acc'][-1]))
             else:
                 nb_errors = compute_nb_errors(model, val_input, val_target)
                 print("epoch: ", e, " train_loss: ", sum_loss, ' val_accuracy:', 1 - (nb_errors / val_target.shape[0]))
