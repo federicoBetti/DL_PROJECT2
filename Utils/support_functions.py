@@ -16,10 +16,7 @@ def compute_nb_errors(model, t_input, target):
             sum(output.gt(0.5).type(LongTensor).ne(i_t.unsqueeze(-1)).type(FloatTensor)))  # 0.5 because of Sigmoid
 
 
-def normalize(train_input, val_input, test_input):
-    mean = train_input.mean(0)
-    std = train_input.std(0)
-
+def normalize(train_input, val_input, test_input, std, mean):
     train_input -= mean
     val_input -= mean
     test_input -= mean
@@ -28,6 +25,11 @@ def normalize(train_input, val_input, test_input):
     val_input /= std
     test_input /= std
     return train_input, val_input, test_input
+
+
+def add_std_mean(param, std, mean):
+    new_param = param.clone()
+    return new_param * std + mean
 
 
 def plot_points(test_target, input, two_out_list, one_out_list):
