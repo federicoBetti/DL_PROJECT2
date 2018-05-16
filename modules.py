@@ -1,5 +1,7 @@
-import numpy as np
-from torch import FloatTensor, Size
+import math
+
+from torch import FloatTensor
+
 from Utils import exceptions_check
 
 
@@ -82,7 +84,7 @@ class Dense(Module):
         self.in_neurons = in_neurons
         self.out_neurons = out_neurons
         self.activation = activation
-        self.weigths = FloatTensor(in_neurons, out_neurons).normal_()
+        self.weigths = FloatTensor(in_neurons, out_neurons).normal_() * math.sqrt(2.0 / in_neurons)
         self.bias = FloatTensor(out_neurons).zero_()
         self.error = 0
 

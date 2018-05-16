@@ -34,7 +34,6 @@ def train_model(model, optim, train_input, train_target, val_input, val_target, 
     previous_loss = 1e5
     patience_count = 0
     patience = 5
-
     for e in range(epoch):
         sum_loss = 0
         for b in range(0, train_input.size(0), mini_batch_size):
@@ -51,7 +50,7 @@ def train_model(model, optim, train_input, train_target, val_input, val_target, 
             sum_loss = sum_loss + loss
 
         # plot semi-real time graph every 30 epochs
-        if not e % 30:
+        if not e % 10:
             ax.clear()
 
             # blue = misspredicted target, green = correct positive target, red = correct negative target
@@ -62,11 +61,11 @@ def train_model(model, optim, train_input, train_target, val_input, val_target, 
             ax.plot(val_input[:, 0][blue_ind].numpy(), val_input[:, 1][blue_ind].numpy(), 'bo')
             fig.canvas.draw()
             sleep(0.1)
-
         # print epoch, loss and validation_accuracy every 100 epochs
         if not e % 100:
             nb_errors = compute_nb_errors(model, val_input, val_target)
             print("epoch: ", e, " loss: ", sum_loss, 'accuracy:', 1 - (nb_errors / val_target.shape[0]))
+            print(model.dw[-1])
 
         # early stopping implementaion
         if early_stopping:

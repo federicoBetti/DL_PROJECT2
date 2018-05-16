@@ -30,7 +30,6 @@ def is_inside_circle(center, x, y):
 def generate_disc_set(nb, center):
     input_train = FloatTensor(nb, 2).uniform_(0, 1)
     target = FloatTensor(nb, 2).zero_()
-    # center = (0, 0)
     for index, line in enumerate(input_train):
         if is_inside_circle(center, line[0], line[1]):
             target[index][1] = 1
