@@ -4,6 +4,23 @@ from Utils import exceptions_check
 from modules import Module
 
 
+# Linear activation function
+class Linear(Module):
+    def __init__(self):
+        super(Linear, self).__init__()
+
+    def forward(self, input):
+        exceptions_check.checkFloatTensor(input)
+        return input
+
+    def backward(self, input):
+        exceptions_check.checkFloatTensor(input)
+        return FloatTensor(input.shape).fill_(1)
+
+    def is_layer(self):
+        return False
+
+
 # Relu activation function
 class ReLU(Module):
     def __init__(self):
@@ -50,23 +67,6 @@ class Sigmoid(Module):
     def backward(self, input):
         exceptions_check.checkFloatTensor(input)
         return input.sigmoid().mul(1 - input.sigmoid())
-
-    def is_layer(self):
-        return False
-
-
-# Linear activation function
-class Linear(Module):
-    def __init__(self):
-        super(Linear, self).__init__()
-
-    def forward(self, input):
-        exceptions_check.checkFloatTensor(input)
-        return input
-
-    def backward(self, input):
-        exceptions_check.checkFloatTensor(input)
-        return FloatTensor(input.shape).fill_(1)
 
     def is_layer(self):
         return False

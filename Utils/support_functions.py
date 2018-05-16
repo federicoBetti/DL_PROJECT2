@@ -19,6 +19,26 @@ def compute_nb_errors(model, t_input, target):
             sum(output.gt(0.5).type(LongTensor).ne(i_t.unsqueeze(-1)).type(FloatTensor)))  # 0.5 because of Sigmoid
 
 
+def compute_history_f(history, model, sum_loss, train_input, train_target, val_input, val_target, criterion):
+    val_acc, val_loss = compute_test_loss_accuracy(model, val_input, val_target, criterion)
+    history['train_loss'].append(sum_loss)
+    history['train_acc'].append(1 - float(compute_nb_errors(model, train_input, train_target) / train_input.size(0)))
+    history['val_acc'].append(val_acc)
+    history['val_loss'].append(val_loss)
+    return history
+
+
+def compute_test_loss_accuracy(model, val_input, val_target, criterion):
+    nb_samples = val_input.size(0)
+    output = model.forward(val_input)
+    loss = criterion.apply(output, val_target)
+    _, i_o = output.max(1)
+    _, i_t = val_target.max(1)
+    nb_errors = sum(i_o.ne(i_t))
+
+    return 1 - nb_errors / float(nb_samples), loss
+
+
 # Normalize data wrt their mean and std
 def standardization(train_input, val_input, test_input, std, mean):
     train_input -= mean
@@ -95,3 +115,38 @@ def real_time_plot(model, ex, xx, yy, ax, fig, val_input_plot, val_input, val_ta
     ax.legend()
     fig.canvas.draw()
     return ax, fig
+
+
+def finalize_standardplot(fig, ax1, ax2):
+    ax1handles, ax1labels = ax1.get_legend_handles_labels()
+    if len(ax1labels) > 0:
+        ax1.legend(ax1handles, ax1labels)
+    ax2handles, ax2labels = ax2.get_legend_handles_labels()
+    if len(ax2labels) > 0:
+        ax2.legend(ax2handles, ax2labels)
+    fig.tight_layout()
+    plt.subplots_adjust(top=0.9)
+
+
+def prepare_standardplot(title, xlabel):
+    fig = plt.figure()
+    ax1 = fig.add_subplot(121)
+    ax2 = fig.add_subplot(122)
+    fig.suptitle(title)
+    ax1.set_ylabel('categorical cross entropy')
+    ax1.set_xlabel(xlabel)
+    ax1.set_yscale('log')
+    ax2.set_ylabel('accuracy [% correct]')
+    ax2.set_xlabel(xlabel)
+    return fig, ax1, ax2
+
+
+def print_save_history(history, title):
+    fig, ax1, ax2 = prepare_standardplot(title, 'epoch')
+    ax1.plot(history['train_loss'], label = "training")
+    ax1.plot(history['val_loss'], label = "validation")
+    ax2.plot(history['train_acc'], label = "training")
+    ax2.plot(history['val_acc'], label = "validation")
+    finalize_standardplot(fig, ax1, ax2)
+
+    fig.canvas.draw()

@@ -1,11 +1,15 @@
 import matplotlib.pyplot as plt
+import sys
+
+import time
 
 import activations as F
 import loss
 import modules as nn
 import optimizer
 from Utils.datasets import generate_disc_set
-from Utils.support_functions import compute_nb_errors, standardization, plot_points, plot_initialization, real_time_plot
+from Utils.support_functions import compute_nb_errors, standardization, plot_points, plot_initialization, \
+    real_time_plot, compute_history_f, print_save_history
 
 # Generate all needed datasets
 center = (0.5, 0.5)
@@ -26,12 +30,16 @@ plot_points(test_target, test_input_plot, test_target.max(1)[1], test_target, 'T
 
 
 def train_model(model, optim, train_input, train_target, val_input, val_target, mini_batch_size, epochs, criterion,
-                early_stopping=False):
+                early_stopping=False, compute_history=False):
     # Initialization for early stopping
     previous_loss = 1e5
     patience_count = 0
     patience = 3
     mini_batch_size_initial = mini_batch_size
+
+    # history initialization
+    history = {'train_loss': [], 'val_loss': [], 'train_acc': [], 'val_acc': []}
+
     # initialization for real-time surface
     ax, xx, yy, ex, fig = plot_initialization(std, mean)
 
@@ -56,10 +64,22 @@ def train_model(model, optim, train_input, train_target, val_input, val_target, 
             ax.clear()
             ax, fig = real_time_plot(model, ex, xx, yy, ax, fig, val_input_plot, val_input, val_target)
 
+        # compute loss and accuracy for both test and validation. Can be useful during the development process
+        if compute_history:
+            history = compute_history_f(history, model, sum_loss, train_input, train_target, val_input, val_target,
+                                        criterion)
+
         # print epoch, loss and validation_accuracy every 100 epochs
         if not e % 10:
-            nb_errors = compute_nb_errors(model, val_input, val_target)
-            print("epoch: ", e, " train_loss: ", sum_loss, ' val_accuracy:', 1 - (nb_errors / val_target.shape[0]))
+            if compute_history:
+                print("{0:d}".format(e),
+                      "train_loss: {0:.4f}".format(history['train_loss'][-1]),
+                      "val_loss: {0:.4f}".format(history['val_loss'][-1]),
+                      "train_acc: {0:.2f}".format(history['train_acc'][-1]),
+                      "val_acc: {0:.2f}".format(history['val_acc'][-1]))
+            else:
+                nb_errors = compute_nb_errors(model, val_input, val_target)
+                print("epoch: ", e, " train_loss: ", sum_loss, ' val_accuracy:', 1 - (nb_errors / val_target.shape[0]))
 
         # early stopping implementation
         if early_stopping:
@@ -71,13 +91,13 @@ def train_model(model, optim, train_input, train_target, val_input, val_target, 
                 patience_count = 0
 
             previous_loss = sum_loss
-
+    return history
 
 # Training parameters
 lr = 1e-4
 optim = optimizer.SGD(lr)
 mini_batch_size = 100
-epoch = 2000
+epoch = 1000
 criterion = loss.MSELoss()
 
 # Model creation
@@ -90,9 +110,15 @@ model = nn.Sequential(
 
 # Train the model
 print(train_input.shape)
-train_model(model, optim, train_input, train_target, val_input, val_target, mini_batch_size, epoch, criterion, True)
+compute_history = True
+history = train_model(model, optim, train_input, train_target, val_input, val_target, mini_batch_size, epoch, criterion, True, compute_history)
+plt.show()
 
 # plot final result on test dataset: accuracy and graph
 nb_errors = compute_nb_errors(model, test_input, test_target)
 print('Test accuracy:', 1 - nb_errors / test_input.shape[0])
-plot_points(test_target, test_input_plot, model.forward(test_input).max(1)[1], model.forward(test_input).gt(0.5))
+
+
+if compute_history:
+    print_save_history(history, 'Training and Validation')
+time.sleep(8)
