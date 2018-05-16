@@ -19,21 +19,24 @@ def compute_nb_errors(model, t_input, target):
             sum(output.gt(0.5).type(LongTensor).ne(i_t.unsqueeze(-1)).type(FloatTensor)))  # 0.5 because of Sigmoid
 
 
+# Compute train_loss train_acc val_acc and val_loss separately to use them as statistics
 def compute_history_f(history, model, sum_loss, train_input, train_target, val_input, val_target, criterion):
     val_acc, val_loss = compute_test_loss_accuracy(model, val_input, val_target, criterion)
-    history['train_loss'].append(sum_loss)
-    history['train_acc'].append(1 - float(compute_nb_errors(model, train_input, train_target) / train_input.size(0)))
+    train_acc, train_loss = compute_test_loss_accuracy(model, train_input, train_target, criterion)
+    history['train_loss'].append(train_loss)
+    history['train_acc'].append(train_acc)
     history['val_acc'].append(val_acc)
     history['val_loss'].append(val_loss)
     return history
 
 
-def compute_test_loss_accuracy(model, val_input, val_target, criterion):
-    nb_samples = val_input.size(0)
-    output = model.forward(val_input)
-    loss = criterion.apply(output, val_target)
+# Compute loss and accuracy of a specific dataset
+def compute_test_loss_accuracy(model, t_input, t_target, criterion):
+    nb_samples = t_input.size(0)
+    output = model.forward(t_input)
+    loss = criterion.apply(output, t_target)
     _, i_o = output.max(1)
-    _, i_t = val_target.max(1)
+    _, i_t = t_target.max(1)
     nb_errors = sum(i_o.ne(i_t))
 
     return 1 - nb_errors / float(nb_samples), loss
@@ -57,6 +60,18 @@ def add_std_mean(param, std, mean):
     return new_param * std + mean
 
 
+# Return correct indexes, both for [0, 1] and [1, 0] labels, and mispredicted indexes
+def get_correct_indexes(model, t_input, t_target):
+    _, correct = model.forward(t_input).max(1)
+    _, correct_index = t_target.max(1)
+    blue = correct_index.ne(correct).type(LongTensor)
+    opposite = (LongTensor(correct.shape).fill_(1) - correct).sub_(blue).clamp(min=0).type(ByteTensor)
+    correct = correct.sub_(blue).clamp(min=0).type(ByteTensor)
+    return correct, opposite, blue.type(ByteTensor)
+
+
+# SUPPORT FUNCTIONS RELATED WITH PLOTS
+
 # Plot points of a given dataset in two different colors. Only 2 different classes permitted
 def plot_points(test_target, input, two_out_list, one_out_list, title=''):
     if len(test_target.shape) > 1:
@@ -66,16 +81,6 @@ def plot_points(test_target, input, two_out_list, one_out_list, title=''):
     plt.scatter(input[:, 0], input[:, 1], color=color)
     plt.title(title)
     plt.show()
-
-
-# Return correct indexes, both for [0, 1] and [1, 0] labels, and mispredicted indexes
-def get_correct_indexes(model, t_input, t_target):
-    _, correct = model.forward(t_input).max(1)
-    _, correct_index = t_target.max(1)
-    blue = correct_index.ne(correct).type(LongTensor)
-    opposite = (LongTensor(correct.shape).fill_(1) - correct).sub_(blue).clamp(min=0).type(ByteTensor)
-    correct = correct.sub_(blue).clamp(min=0).type(ByteTensor)
-    return correct, opposite, blue.type(ByteTensor)
 
 
 # Initialize plot for real time visualization
@@ -117,7 +122,8 @@ def real_time_plot(model, ex, xx, yy, ax, fig, val_input_plot, val_input, val_ta
     return ax, fig
 
 
-def finalize_standardplot(fig, ax1, ax2):
+# Finalize loss/accuracy plot
+def finalize_plot(fig, ax1, ax2):
     ax1handles, ax1labels = ax1.get_legend_handles_labels()
     if len(ax1labels) > 0:
         ax1.legend(ax1handles, ax1labels)
@@ -128,12 +134,13 @@ def finalize_standardplot(fig, ax1, ax2):
     plt.subplots_adjust(top=0.9)
 
 
-def prepare_standardplot(title, xlabel):
+# Create figure and subplots for loss/accuracy plot
+def prepare_plot(title, xlabel):
     fig = plt.figure()
     ax1 = fig.add_subplot(121)
     ax2 = fig.add_subplot(122)
     fig.suptitle(title)
-    ax1.set_ylabel('categorical cross entropy')
+    ax1.set_ylabel('MSE Loss')
     ax1.set_xlabel(xlabel)
     ax1.set_yscale('log')
     ax2.set_ylabel('accuracy [% correct]')
@@ -141,12 +148,13 @@ def prepare_standardplot(title, xlabel):
     return fig, ax1, ax2
 
 
+# Add values to loss/accuracy plot
 def print_save_history(history, title):
-    fig, ax1, ax2 = prepare_standardplot(title, 'epoch')
-    ax1.plot(history['train_loss'], label = "training")
-    ax1.plot(history['val_loss'], label = "validation")
-    ax2.plot(history['train_acc'], label = "training")
-    ax2.plot(history['val_acc'], label = "validation")
-    finalize_standardplot(fig, ax1, ax2)
+    fig, ax1, ax2 = prepare_plot(title, 'epoch')
+    ax1.plot(history['train_loss'], label="training")
+    ax1.plot(history['val_loss'], label="validation")
+    ax2.plot(history['train_acc'], label="training")
+    ax2.plot(history['val_acc'], label="validation")
+    finalize_plot(fig, ax1, ax2)
 
     fig.canvas.draw()
