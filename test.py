@@ -54,7 +54,7 @@ def train_model(model, optim, train_input, train_target, val_input, val_target, 
             sum_loss = sum_loss + loss
 
         # plot semi-real time graph every 30 epochs
-        if not e % 10:
+        if not e % 1:
             ax.clear()
 
             # blue = mispredicted target, green = correct positive target, red = correct negative target
@@ -85,7 +85,7 @@ def train_model(model, optim, train_input, train_target, val_input, val_target, 
 lr = 1e-4
 optim = optimizer.SGD(lr)
 mini_batch_size = 100
-epoch = 10000
+epoch = 2000
 criterion = loss.MSELoss()
 
 model = nn.Sequential(

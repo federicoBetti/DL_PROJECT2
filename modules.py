@@ -26,7 +26,7 @@ class Sequential(Module):
         self.num_layers = len(self.layers)
         self.db = [FloatTensor(layer.bias.shape).zero_() for layer in self.layers]
         self.dw = [FloatTensor(layer.weigths.shape).zero_() for layer in self.layers]
-        self.results = []  # to store results in the forward pass
+        self.results = []  # to store dense layer outputs in the forward pass
         self.activation = []  # to store activation function results in the forward pass
 
     def forward(self, x):
@@ -68,7 +68,7 @@ class Sequential(Module):
             dlds = dldx * dsigma  # compute the error wrt the error in the next layer
 
             db[-i].add_(dlds.sum(0))
-            dw[-i].add_(x_lb.t().mm(dlds)) # compute the loss wrt all weighs in the network
+            dw[-i].add_(x_lb.t().mm(dlds))  # compute the loss wrt all weighs in the network
 
         return dw, db
 
