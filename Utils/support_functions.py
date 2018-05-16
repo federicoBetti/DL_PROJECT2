@@ -88,9 +88,10 @@ def real_time_plot(model, ex, xx, yy, ax, fig, val_input_plot, val_input, val_ta
     # blue = mispredicted target, green = correct positive target, red = correct negative target
     green_ind, red_ind, blue_ind = get_correct_indexes(model, val_input, val_target)
 
-    ax.plot(val_input_plot[:, 0][green_ind].numpy(), val_input_plot[:, 1][green_ind].numpy(), 'go')
-    ax.plot(val_input_plot[:, 0][red_ind].numpy(), val_input_plot[:, 1][red_ind].numpy(), 'ro')
-    ax.plot(val_input_plot[:, 0][blue_ind].numpy(), val_input_plot[:, 1][blue_ind].numpy(), 'bo')
+    ax.plot(val_input_plot[:, 0][green_ind].numpy(), val_input_plot[:, 1][green_ind].numpy(), 'go', label='Correct +')
+    ax.plot(val_input_plot[:, 0][red_ind].numpy(), val_input_plot[:, 1][red_ind].numpy(), 'ro', label='Correct -')
+    ax.plot(val_input_plot[:, 0][blue_ind].numpy(), val_input_plot[:, 1][blue_ind].numpy(), 'bo', label='Mispredicted')
     ax.set_title('Dynamic results on validation dataset')
+    ax.legend()
     fig.canvas.draw()
     return ax, fig
