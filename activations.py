@@ -1,13 +1,10 @@
-from math import nan
-
-import sys
 from torch import FloatTensor
-import numpy as np
 
 from Utils import exceptions_check
 from modules import Module
 
 
+# Relu activation function
 class ReLU(Module):
     def __init__(self):
         super(ReLU, self).__init__()
@@ -24,6 +21,7 @@ class ReLU(Module):
         return False
 
 
+# Tanh activation function
 class Tanh(Module):
     def __init__(self):
         super(Tanh, self).__init__()
@@ -40,6 +38,7 @@ class Tanh(Module):
         return False
 
 
+# Sigmoid activation function
 class Sigmoid(Module):
     def __init__(self):
         super(Sigmoid, self).__init__()
@@ -50,12 +49,13 @@ class Sigmoid(Module):
 
     def backward(self, input):
         exceptions_check.checkFloatTensor(input)
-        return input.sigmoid().mul(1-input.sigmoid())
+        return input.sigmoid().mul(1 - input.sigmoid())
 
     def is_layer(self):
         return False
 
 
+# Linear activation function
 class Linear(Module):
     def __init__(self):
         super(Linear, self).__init__()
@@ -72,6 +72,7 @@ class Linear(Module):
         return False
 
 
+# Softmax activation function
 class SoftMax(Module):
     def __init__(self):
         super(SoftMax, self).__init__()

@@ -1,5 +1,4 @@
 import math
-
 from torch import FloatTensor
 
 from Utils import exceptions_check

@@ -1,9 +1,9 @@
 import math
-
 import numpy as np
 from torch import FloatTensor
 
 
+# Generate a circle, used for first tests
 def generate_radius(number_points):
     input = FloatTensor(number_points, 2).uniform_(-1, 1)
     print(input.shape)
@@ -19,6 +19,7 @@ def generate_radius(number_points):
     return input, new_target
 
 
+# Helper function to check if a point is inside the circle
 def is_inside_circle(center, x, y):
     radius = 1 / math.sqrt(2 * math.pi)
     if math.sqrt((x - center[0]) ** 2 + (y - center[1]) ** 2) < radius:
@@ -27,6 +28,7 @@ def is_inside_circle(center, x, y):
         return False
 
 
+# Generate a dataset where points inside the circle are labeled [0, 1], [1, 0] otherwise
 def generate_disc_set(nb, center):
     input_train = FloatTensor(nb, 2).uniform_(0, 1)
     target = FloatTensor(nb, 2).zero_()
@@ -39,6 +41,7 @@ def generate_disc_set(nb, center):
     return input_train, target
 
 
+# Generate a spiral, not properly tested. For future implementations
 def generate_spiral():
     N = 100  # number of points per class
     D = 2  # dimensionality
