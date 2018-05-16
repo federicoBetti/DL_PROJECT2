@@ -5,3 +5,10 @@
 
 /data/*
 dlc_practical_prologue.py
+
+/Latex/main.pdf
+/Latex/main.aux
+/Latex/main.log
+/Latex/main.lof
+/Latex/main.thm
+/Latex/main.synctex.gz
