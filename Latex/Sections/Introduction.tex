@@ -1,0 +1,10 @@
+Lo scopo di questo progetto è realizzare un freamwork per la creazione e training di modelli di Artificial Neural Networks. \\
+Come modello di partenza è stato utilizzato quello consigliato dall'assignements, tuttavia sono stati apportate modifiche e miglioramente durante lo sviluppo. La versione finale del framwork da la possibiltà di creare un multilayer perceptron con qualisasi grandezza e profondità. Abbiamo cercato di creare una struttura modulare grazie all'utilizzo del container Sequential per fornire la massima flessibiità al programmatore. Ogni livello di Sequential deve essere composto da un layer Dense e da una funzione di attivazione; la funzione linear può essere utilizzata nel caso in cui si voglia propagare l'output del Dense layer senza modifiche al livello sucessivo. \\
+Le funzioni di attivazione implementate sono:
+\begin{itemize}
+	\item Linear
+	\item Tanh
+	\item Sigmoid
+	\item Relu
+	\item Softmax
+\end{itemize}
