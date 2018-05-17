@@ -73,14 +73,32 @@ def get_correct_indexes(model, t_input, t_target):
 # SUPPORT FUNCTIONS RELATED WITH PLOTS
 
 # Plot points of a given dataset in two different colors. Only 2 different classes permitted
-def plot_points(test_target, input, two_out_list, one_out_list, title=''):
+def plot_points(test_target, input, two_out_list, one_out_list, title='', fig=None, ax=None):
+    ax.clear()
     if len(test_target.shape) > 1:
         color = ['red' if int(i_o) == 0 else 'green' for i_o in two_out_list]  # two output
     else:
         color = ['red' if l == 0 else 'green' for l in one_out_list]
-    plt.scatter(input[:, 0], input[:, 1], color=color)
-    plt.title(title)
-    plt.show()
+    ax.scatter(input[:, 0], input[:, 1], color=color)
+    ax.set_title(title)
+    fig.canvas.draw()
+    return fig
+
+
+# Plot all the points in blue if they are mispredicted by the net, in the right color otherwise
+def plot_final_points(model, t_input_plot, t_input, t_target, title, fig, ax, legend = True):
+    # blue = mispredicted target, green = correct positive target, red = correct negative target
+    green_ind, red_ind, blue_ind = get_correct_indexes(model, t_input, t_target)
+
+    ax.plot(t_input_plot[:, 0][green_ind].numpy(), t_input_plot[:, 1][green_ind].numpy(), 'go', label='Correct +')
+    ax.plot(t_input_plot[:, 0][red_ind].numpy(), t_input_plot[:, 1][red_ind].numpy(), 'ro', label='Correct -')
+    ax.plot(t_input_plot[:, 0][blue_ind].numpy(), t_input_plot[:, 1][blue_ind].numpy(), 'bo', label='Mispredicted')
+
+    ax.set_title(title)
+    if legend:
+        ax.legend()
+    fig.canvas.draw()
+    return fig, ax
 
 
 # Initialize plot for real time visualization
@@ -110,15 +128,9 @@ def real_time_plot(model, ex, xx, yy, ax, fig, val_input_plot, val_input, val_ta
         colorConverter.to_rgba('g', alpha=0.50)])
     ax.contourf(xx, yy, classification_plane, cmap=cmap)
 
-    # blue = mispredicted target, green = correct positive target, red = correct negative target
-    green_ind, red_ind, blue_ind = get_correct_indexes(model, val_input, val_target)
+    fig, ax = plot_final_points(model, val_input_plot, val_input, val_target, 'Dynamic results on validation dataset',
+                                fig, ax)
 
-    ax.plot(val_input_plot[:, 0][green_ind].numpy(), val_input_plot[:, 1][green_ind].numpy(), 'go', label='Correct +')
-    ax.plot(val_input_plot[:, 0][red_ind].numpy(), val_input_plot[:, 1][red_ind].numpy(), 'ro', label='Correct -')
-    ax.plot(val_input_plot[:, 0][blue_ind].numpy(), val_input_plot[:, 1][blue_ind].numpy(), 'bo', label='Mispredicted')
-    ax.set_title('Dynamic results on validation dataset')
-    ax.legend()
-    fig.canvas.draw()
     return ax, fig
 
 

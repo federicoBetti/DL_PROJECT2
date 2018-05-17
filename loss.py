@@ -6,12 +6,12 @@ class MSELoss(Module):
         super(MSELoss, self).__init__()
 
     def apply(self, v, t):
-        return (v - t.resize_(v.size())).pow(2).sum() # we need this resize although v: (#batch_size, 1),
-        # t:(#batch_size) produce as result (#batch_size,#batch_size). We want (#batch_size,1)
+        return (v - t.resize_(v.size())).pow(2).sum() # we need this resize because there could be problmes with
+        # one-dim target tensors
 
     def prime(self, v, t):
-        return 2 * (v - t.resize_(v.size())) # we need this resize although v: (#batch_size, 1), t:(#batch_size)
-        # produce as result (#batch_size,#batch_size). We want (#batch_size,1)
+        return 2 * (v - t.resize_(v.size()))  # we need this resize because there could be problmes with one-dim
+        # target tensors
 
     def is_layer(self):
         return False

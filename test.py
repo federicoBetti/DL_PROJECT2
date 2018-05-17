@@ -1,7 +1,6 @@
-import matplotlib.pyplot as plt
-import sys
-
 import time
+
+import matplotlib.pyplot as plt
 
 import activations as F
 import loss
@@ -9,7 +8,7 @@ import modules as nn
 import optimizer
 from Utils.datasets import generate_disc_set
 from Utils.support_functions import compute_nb_errors, standardization, plot_points, plot_initialization, \
-    real_time_plot, compute_history_f, print_save_history
+    real_time_plot, compute_history_f, print_save_history, plot_final_points
 
 # Generate all needed datasets
 center = (0.5, 0.5)
@@ -26,7 +25,10 @@ train_input, val_input, test_input = standardization(train_input, val_input, tes
 
 # plot learning objective
 plt.ion()
-plot_points(test_target, test_input_plot, test_target.max(1)[1], test_target, 'Test dataset')
+fig = plt.figure()
+ax = fig.add_subplot(111)
+fig.show()
+fig = plot_points(test_target, test_input_plot, test_target.max(1)[1], test_target, 'Test dataset', fig, ax)
 
 
 def train_model(model, optim, train_input, train_target, val_input, val_target, mini_batch_size, epochs, criterion,
@@ -41,7 +43,7 @@ def train_model(model, optim, train_input, train_target, val_input, val_target, 
     history = {'train_loss': [], 'val_loss': [], 'train_acc': [], 'val_acc': []}
 
     # initialization for real-time surface
-    ax, xx, yy, ex, fig = plot_initialization(std, mean)
+    ax_rt, xx, yy, ex, fig_rt = plot_initialization(std, mean)
 
     for e in range(epochs):
         sum_loss = 0
@@ -50,7 +52,7 @@ def train_model(model, optim, train_input, train_target, val_input, val_target, 
             if (train_input.size(0) - b) < mini_batch_size:
                 mini_batch_size = train_input.size(0) - b
 
-            optim.zero_grad(model)
+            optim.zero_grad(model)  # Reset dw and db for each layer
 
             output = model.forward(train_input.narrow(0, b, mini_batch_size))
             loss = criterion.apply(output, train_target.narrow(0, b, mini_batch_size))
@@ -61,8 +63,8 @@ def train_model(model, optim, train_input, train_target, val_input, val_target, 
 
         # plot semi-real time graph every 30 epochs but always before the 80th to see changes
         if not e % 30 or e < 80:
-            ax.clear()
-            ax, fig = real_time_plot(model, ex, xx, yy, ax, fig, val_input_plot, val_input, val_target)
+            ax_rt.clear()
+            ax_rt, fig_rt = real_time_plot(model, ex, xx, yy, ax_rt, fig_rt, val_input_plot, val_input, val_target)
 
         # compute loss and accuracy for both test and validation. Can be useful during the development process
         if compute_history:
@@ -93,11 +95,12 @@ def train_model(model, optim, train_input, train_target, val_input, val_target, 
             previous_loss = sum_loss
     return history
 
+
 # Training parameters
 lr = 1e-4
 optim = optimizer.SGD(lr)
 mini_batch_size = 100
-epoch = 1000
+epoch = 2000
 criterion = loss.MSELoss()
 
 # Model creation
@@ -111,14 +114,17 @@ model = nn.Sequential(
 # Train the model
 print(train_input.shape)
 compute_history = True
-history = train_model(model, optim, train_input, train_target, val_input, val_target, mini_batch_size, epoch, criterion, True, compute_history)
+history = train_model(model, optim, train_input, train_target, val_input, val_target, mini_batch_size, epoch, criterion,
+                      True, compute_history)
 plt.show()
-
-# plot final result on test dataset: accuracy and graph
-nb_errors = compute_nb_errors(model, test_input, test_target)
-print('Test accuracy:', 1 - nb_errors / test_input.shape[0])
-
 
 if compute_history:
     print_save_history(history, 'Training and Validation')
-time.sleep(8)
+
+# plot final result on test dataset: accuracy and graph
+nb_errors = compute_nb_errors(model, test_input, test_target)
+test_accuracy = 1 - nb_errors / test_input.shape[0]
+print('Test accuracy:', test_accuracy)
+plot_final_points(model, test_input_plot, test_input, test_target, 'Final Result on Test dataset - Accuracy: ' + str(test_accuracy), fig, ax, False)
+
+time.sleep(80)
