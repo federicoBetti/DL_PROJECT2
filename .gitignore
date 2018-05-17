@@ -12,3 +12,7 @@ dlc_practical_prologue.py
 /Latex/main.lof
 /Latex/main.thm
 /Latex/main.synctex.gz
+/Latex/main.out
+/Latex/main.toc
+/Latex/*.log
+/Latex/_minted-main/*
