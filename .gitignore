@@ -1,10 +1,11 @@
 # for Pycharm
-/.idea/*
+.idea/*
 */__pycache__
 /__pycache__
 
-/data/*
-dlc_practical_prologue.py
+/src/data/*
+/src/dlc_practical_prologue.py
+/src/.idea/*
 
 /Latex/main.pdf
 /Latex/main.aux
