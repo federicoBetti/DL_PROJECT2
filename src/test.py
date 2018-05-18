@@ -127,4 +127,4 @@ test_accuracy = 1 - nb_errors / test_input.shape[0]
 print('Test accuracy:', test_accuracy)
 plot_final_points(model, test_input_plot, test_input, test_target, 'Final Result on Test dataset - Accuracy: ' + str(test_accuracy), fig, ax, False)
 
-time.sleep(80)
+time.sleep(20)
