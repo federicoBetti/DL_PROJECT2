@@ -14,7 +14,7 @@ def __init__(self, *args):
 
 Results and Activation lists will play an important role in the algorithm's evolution, as will be seen below. Result list will contain the outputs of the dense layers during the forward pass, while Activation will save the results of the corresponding activation functions. For an implementation issue the input layer during the backpropagation algorithm will be treated as a result of activation function, hence stored in the Activation list. Thinking about it, it sounds normal since it is what enter as input in the first layer of the net and it should be treated exactly the same as other input layers. 
 \begin{figure}[H]
-	\includegraphics[width=\textwidth]{Images/netowrk.png}
+	\includegraphics[width=0.8\textwidth]{Images/netowrk.png}
 	\centering
 \end{figure}
 Thanks to the figure above our model structure can be easily understood. In fact we have separated the Dense layer that computes results from the activation layer that computes activations. 

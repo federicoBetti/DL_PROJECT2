@@ -1,6 +1,7 @@
 The aim of this project is to create a freamwork for the development and training of Artificial Neural Networks. We decided to import, as requested, only the FloatTensor and LongTensor classes from Torch and therefore we decided to base all the calculation within the freamwork on the functions that were available in those classes. We tried to use the numpy library as little as possible in the computational phase, trying to apply the concepts learned in the first part of the course on the use of the Torch library and all the methods about tensors that it holds.\\
 The starting model used was the one recommended by the assignments, but changes and improvements were made during development. The final version of the framework gives the possibility to create a multylayer perceptron of any size and depth. We have tried to create a modular structure by using the \textbf{Sequential} container to provide maximum flexibility to the programmer. Each Sequential layer must consist of a \textbf{Dense} layer and an activation function; the linear function can be used in case you want to propagate the output of the Dense layer without any modification. \\
-The activation functions implemented are:
+The activation functions implemented are: \textbf{Linear}, \textbf{Tanh}, \textbf{Sigmoid}, \textbf{ReLU}, \textbf{Softmax}. \\
+\begin{comment}
 \begin{itemize}
 	\item Linear
 	\item Tanh
@@ -8,6 +9,7 @@ The activation functions implemented are:
 	\item Relu
 	\item Softmax
 \end{itemize}
+\end{comment}
 In this embryonic phase of the project only the \textbf{Mean Squared Error} (MSE) loss has been implemented and is sufficient to satisfy the requests. However, especially if classification problems are considered, a future implementation of the Cross Entropy loss would be desired. \\
 We chose to implement, as required, only \textbf{Stochastic Gradient Descent} (SGD) as optimizer, in a variant that uses mini-batches. \\
 As will be explained in more detail in the next section we have implemented the framework in order to have the ability to use mini-batches and not be forced to use only one sample at a time; in fact thanks to the use of matrix calculation provided by the Torch library, everything is optimized and executed very quickly. \\
