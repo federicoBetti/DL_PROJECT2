@@ -1,5 +1,5 @@
-As already mentioned, we have used a structure of classes and methods similar to the one recommended in the assignments with some little modifications trying to reflect the structure we had set ourselves. Our model is based on the succession of layers within a Sequential container, which consist respectively of a Dense module and an activation function. We made the implementation choice to save the weights and biases inside the layer object, while gradients will be stored in the container. This is because during the backpropagation algorithm, which in our case takes place in the Sequential container, it is necessary to refer to all gradients in the network, while the subsequent weights update, performed by the optimizer, can be done separately. \\
-The core of our framework, as you can see from these lines, is the Sequential module. When it is instantiated, the container receives as input all the Dense layers of the network. It add them in an ordered list and consequently initialize lists to store weight (dw) and bias (db) gradients.
+As already mentioned, we have used a structure of classes and methods similar to the one recommended in the assignments with some little modifications. Our model is based on the succession of layers within a Sequential container, which consist respectively of a Dense module and an activation function. We made the implementation choice to save the weights and biases inside the layer object, while gradients will be stored in the container. This is because during the backpropagation algorithm, which in our case takes place in the Sequential container, it is necessary to refer to all gradients in the network, while the subsequent weights update, performed by the optimizer, can be done separately. \\
+The core of our framework is the Sequential module. When it is instantiated, the container receives as input all the Dense layers of the network. It add them in an ordered list and consequently initialize lists to store weight (dw) and bias (db) gradients.
 
 \begin{minted}{Python}
 def __init__(self, *args):
@@ -12,7 +12,7 @@ def __init__(self, *args):
 	self.activation = []
 \end{minted}
 
-Results and Activation lists will play an important role in the algorithm's evolution, as will be seen below. Result list will contain the outputs of the dense layers during the forward pass, while Activation will save the results of the corresponding activation functions. For an implementation issue the input layer during the backpropagation algorithm will be treated as a result of activation function, hence stored in the Activation list. Thinking about it, it sounds normal since it is what enter as input in the first layer of the net and it should be treated exactly the same as other input layers. 
+Results and Activation lists will play an important role in the algorithm's evolution, as will be seen below. Result list will contain the outputs of the dense layers during the forward pass, while Activation will save the results of the corresponding activation functions. For an implementation issue the input layer during the backpropagation algorithm will be treated as a result of activation function, hence stored in the Activation list. Thinking about it, it is reasonable since it is what enter as input in the first layer of the net and it should be treated exactly the same as other input layers. 
 \begin{figure}[H]
 	\includegraphics[width=0.8\textwidth]{Images/netowrk.png}
 	\centering
@@ -92,7 +92,7 @@ During the algorithm implementation we decided to keep the computation of gradie
 	\centering
 \end{figure}
 
-
+\begin{comment}
 \begin{itemize}
 	\item \textbf{disgma}: It contains the activation function derivative made with respect to the output of the previous dense layer.
 	\item \textbf{dldx (output layer)}: It contains the derivative of the loss function, starting point of the algorithm. This step compares the final target and the network output to calculate the network output gradient.
@@ -100,8 +100,9 @@ During the algorithm implementation we decided to keep the computation of gradie
 	\item \textbf{dlds}: It is the gradient of the output of the dense layer with respect to the final loss. It is calculated by multiplying the loss derivative of its own activation layer (the next one) and its derivative. This operation is the cause of vanishing gradient problem: if the network is too deep you risk that both factors become very close to zero, therefore dlds and all the gradients in previous layers would be stick to zero. This would lead to a dead net that doesn't change its weights and consequently stops learning.
 \end{itemize}  
 
+\end{comment}
 
-The code has been properly commented in the source code; it can be useful to check also what support functions do, since they are not well investigated in the report.
+The code has been properly commented in the source code; it can be useful to check also what support functions do, since they are not investigated in the report.
 
 \subsection{Dense Layer}
 \label{sect:Dense}
@@ -111,7 +112,8 @@ def __init__(self, in_neurons, out_neurons, activation):
     self.in_neurons = in_neurons
     self.out_neurons = out_neurons
     self.activation = activation
-    self.weigths = FloatTensor(in_neurons, out_neurons).normal_() * math.sqrt(2.0 / in_neurons)
+    self.weigths = FloatTensor(in_neurons, out_neurons).normal_() * 
+	    math.sqrt(2.0 / in_neurons)
     self.bias = FloatTensor(out_neurons).zero_()
     self.error = 0
     
@@ -123,16 +125,20 @@ def backward(self, input):
     return input
 \end{minted}
 The definition of a Dense Layer is quite standard. We made the implementation choice to save the activation, taken as a parameter, in a specific field. For this reason the backward pass of this layer replicates only the input, while the derivative of the activation function will be executed during the backward pass calling activation.backward(input). \\
-The initialization of the weights was problematic: at first the initialization was only done with a normal distribution, but we realized that with certain initial conditions the gradient lay down on a local minimum and blocked after a few epochs. At the end, after a detailed search on the web for weights initialization techniques, we found the solution to multiply by $\sqrt{\frac{2}{in\_neurons}}$. This made the initial weights smaller and eliminated the initial problem once and for all.
+The initialization of the weights was problematic: at first the initialization was only done with a normal distribution, but we realized that with certain initial conditions the gradient lay down on a local minimum and blocked after a few epochs. At the end, after a detailed search on the web for weights initialization techniques, we found the solution should be multiplied by $\sqrt{\frac{2}{in\_neurons}}$. The problem was that the variance grows with the number of inputs, hence we have scaled it to make its variance $ \frac{1}{N} $, where N is the number of inputs.
 
 \subsection{Optimizer}
 \label{sect:Optimizer}
 
 \begin{minted}{Python}
- def step(self, model):
+def step(self, model):
 	 for i, layer in enumerate(model.layers):
 		 layer.weigths -= self.lr * model.dw[i] 
 		 layer.bias -= self.lr * model.db[i]
+		 
+def adjust_parameter(self, new_lr):
+	 self.lr = new_lr
+		 
 \end{minted}
 The step method is the core of the optimizer: since we have implemented only the SGD the updates on weights and biases are performed by subtracting the gradients multiplied by the learning rate, previously saved as the initial parameter of the optimizer. \\
 We have given the possibility to update the learning rate during the training procedure. It can be very useful in more complicated problems when you want to decrease the learning rate after a specific number of epochs to increase precision and regularity.
